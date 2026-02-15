@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { EmptyChartCard } from "@/components/EmptyChart";
+import { useSensorReadings } from "@/lib/useSensorReadings";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { data: chartData, loading: dataLoading, error: dataError } = useSensorReadings();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -75,13 +77,18 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {dataError && (
+        <p className="muted" style={{ color: "#f85149", marginBottom: "1rem" }}>
+          Could not load sensor data: {dataError}
+        </p>
+      )}
       <section className="charts-grid">
-        <EmptyChartCard title="Temperature" unit="°C" />
-        <EmptyChartCard title="Humidity" unit="%" />
-        <EmptyChartCard title="Soil moisture" unit="%" />
-        <EmptyChartCard title="Soil pH" />
-        <EmptyChartCard title="Water flow" unit="L" />
-        <EmptyChartCard title="Water depth" unit="cm" />
+        <EmptyChartCard title="Temperature" unit="°C" data={chartData?.Temperature} href="/metrics/temperature" />
+        <EmptyChartCard title="Humidity" unit="%" data={chartData?.Humidity} href="/metrics/humidity" />
+        <EmptyChartCard title="Soil moisture" unit="%" data={chartData?.["Soil moisture"]} href="/metrics/soil-moisture" />
+        <EmptyChartCard title="Soil pH" data={chartData?.["Soil pH"]} href="/metrics/soil-ph" />
+        <EmptyChartCard title="Water flow" unit="L" data={chartData?.["Water flow"]} href="/metrics/water-flow" />
+        <EmptyChartCard title="Water depth" unit="cm" data={chartData?.["Water depth"]} href="/metrics/water-depth" />
       </section>
     </main>
   );
