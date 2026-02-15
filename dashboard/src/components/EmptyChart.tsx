@@ -58,14 +58,15 @@ function CustomTooltip({
     <div
       className="chart-tooltip"
       style={{
-        background: "#161b22",
-        border: "1px solid #30363d",
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        color: "var(--text)",
         borderRadius: 6,
         padding: "0.5rem 0.75rem",
         fontSize: "0.8rem",
       }}
     >
-      <div style={{ color: "#8b949e" }}>{dt}</div>
+      <div style={{ color: "var(--muted)" }}>{dt}</div>
       <div>
         {title}: <strong>{p.value}{unit ?? ""}</strong>
       </div>
@@ -102,13 +103,13 @@ export function EmptyChartCard({ title, unit, data, href }: EmptyChartCardProps)
               <stop offset="100%" stopColor="#58a6ff" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2d3a4d" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis dataKey="name" hide />
           <YAxis
             domain={domain}
-            tick={{ fill: "#8b949e", fontSize: 11 }}
-            tickLine={{ stroke: "#2d3a4d" }}
-            axisLine={{ stroke: "#2d3a4d" }}
+            tick={{ fill: "var(--muted)", fontSize: 11 }}
+            tickLine={{ stroke: "var(--border)" }}
+            axisLine={{ stroke: "var(--border)" }}
             unit={unit}
           />
           <Tooltip

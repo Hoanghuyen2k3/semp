@@ -299,21 +299,21 @@ export default function PlantHealthPage() {
                 layout="vertical"
                 margin={{ top: 4, right: 4, left: 4, bottom: 4 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d3a4d" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis
                   type="number"
                   domain={[0, 100]}
-                  tick={{ fill: "#8b949e", fontSize: 11 }}
-                  tickLine={{ stroke: "#2d3a4d" }}
-                  axisLine={{ stroke: "#2d3a4d" }}
+                  tick={{ fill: "var(--muted)", fontSize: 11 }}
+                  tickLine={{ stroke: "var(--border)" }}
+                  axisLine={{ stroke: "var(--border)" }}
                 />
                 <YAxis
                   type="category"
                   dataKey="label"
                   width={140}
-                  tick={{ fill: "#8b949e", fontSize: 11 }}
-                  tickLine={{ stroke: "#2d3a4d" }}
-                  axisLine={{ stroke: "#2d3a4d" }}
+                  tick={{ fill: "var(--muted)", fontSize: 11 }}
+                  tickLine={{ stroke: "var(--border)" }}
+                  axisLine={{ stroke: "var(--border)" }}
                   tickFormatter={(v) => (v.length > 20 ? v.slice(0, 18) + "…" : v)}
                 />
                 <Tooltip
@@ -322,9 +322,11 @@ export default function PlantHealthPage() {
                     const p = payload[0].payload;
                     return (
                       <div
+                        className="chart-tooltip"
                         style={{
-                          background: "#161b22",
-                          border: "1px solid #30363d",
+                          background: "var(--surface)",
+                          border: "1px solid var(--border)",
+                          color: "var(--text)",
                           borderRadius: 6,
                           padding: "0.5rem 0.75rem",
                           fontSize: "0.8rem",

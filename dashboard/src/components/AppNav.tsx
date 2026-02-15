@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { useAlertNotificationContext } from "@/context/AlertNotificationContext";
 import { NotificationBell } from "./NotificationBell";
+import { ThemeToggle } from "./ThemeToggle";
 
 type AppNavProps = {
   user: User | null;
@@ -49,8 +50,10 @@ export function AppNav({ user, onSignOut }: AppNavProps) {
             Settings
           </Link>
         </nav>
-        {user && (
-          <div className="app-nav-actions">
+        <div className="app-nav-actions">
+          <ThemeToggle />
+          {user && (
+            <>
             {notificationCtx && (
               <NotificationBell
                 alerts={notificationCtx.alerts}
@@ -66,8 +69,9 @@ export function AppNav({ user, onSignOut }: AppNavProps) {
             >
               Sign out
             </button>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
