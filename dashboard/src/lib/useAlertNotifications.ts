@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { supabase } from "./supabase";
 import type { SensorReading } from "./supabase";
 import { extractChartData, type ChartDataset } from "./useSensorReadings";
@@ -113,13 +114,15 @@ async function sendAlertEmail(alert: CriticalAlert): Promise<boolean> {
 }
 
 export function useAlertNotifications() {
+  const pathname = usePathname();
   const [alerts, setAlerts] = useState<CriticalAlert[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [configVersion, setConfigVersion] = useState(0);
-  const lastAlertIdsRef = { current: new Set<string>() };
+  const lastAlertIdsRef = useRef<Set<string>>(new Set());
+  const hasInitialLoadRef = useRef(false);
 
   const processReadings = useCallback((readings: SensorReading[]) => {
     const newAlerts = computeAlerts(readings);
@@ -130,6 +133,13 @@ export function useAlertNotifications() {
       (a) => !lastAlertIdsRef.current.has(a.id)
     );
     lastAlertIdsRef.current = newIds;
+
+    // On initial load: seed lastAlertIdsRef but do NOT show toasts.
+    // Only toast for alerts that appear AFTER the user has loaded the page.
+    if (!hasInitialLoadRef.current) {
+      hasInitialLoadRef.current = true;
+      return;
+    }
 
     if (brandNew.length > 0) {
       brandNew.forEach((alert) => {
@@ -160,6 +170,12 @@ export function useAlertNotifications() {
   }, []);
 
   useEffect(() => {
+    // Skip alert checking on login page - no toasts when not logged in
+    if (pathname === "/login") {
+      setLoading(false);
+      return;
+    }
+
     async function fetchAndCheck() {
       try {
         const { data: rows, error: err } = await supabase
@@ -187,7 +203,7 @@ export function useAlertNotifications() {
     fetchAndCheck();
     const interval = setInterval(fetchAndCheck, 5 * 60 * 1000); // Poll every 5 minutes to stay within free tier
     return () => clearInterval(interval);
-  }, [configVersion, processReadings]);
+  }, [pathname, configVersion, processReadings]);
 
   const unreadCount = alerts.filter((a) => !readIds.has(a.id)).length;
 
