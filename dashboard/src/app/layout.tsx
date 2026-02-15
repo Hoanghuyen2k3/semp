@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AlertNotificationProvider } from "@/context/AlertNotificationContext";
 
 export const metadata: Metadata = {
-  title: "Garden Environment Monitoring",
+  title: "Smart Eco-Monitoring Platform",
   description: "LoRaWAN sensor dashboard – temperature, humidity, soil, water, flow, visitors",
 };
 
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AlertNotificationProvider>{children}</AlertNotificationProvider>
+      </body>
     </html>
   );
 }

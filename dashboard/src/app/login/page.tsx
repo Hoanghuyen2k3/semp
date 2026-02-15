@@ -47,7 +47,7 @@ export default function LoginPage() {
   return (
     <main className="main auth-page">
       <div className="auth-card">
-        <h1>Garden Monitoring</h1>
+        <h1>Smart Eco-Monitoring Platform</h1>
         <p className="auth-subtitle">
           {isRegister ? "Create an account" : "Sign in to view the dashboard"}
         </p>

@@ -33,12 +33,13 @@ function CustomTooltip({
   unit,
 }: {
   active?: boolean;
-  payload?: { value: number }[];
+  payload?: unknown[];
   title: string;
   unit?: string;
 }) {
   if (!active || !payload?.length) return null;
-  const p = payload[0].payload as ChartDataPoint;
+  const first = payload[0] as Record<string, unknown>;
+  const p = (first?.payload ?? first) as ChartDataPoint;
   const dt = formatDateTime(p.received_at);
   return (
     <div

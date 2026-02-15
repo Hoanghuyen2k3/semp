@@ -25,7 +25,7 @@ function toNumber(val: unknown): number {
   return 0;
 }
 
-function extractChartData(readings: SensorReading[]): ChartDataset {
+export function extractChartData(readings: SensorReading[]): ChartDataset {
   const temp: ChartDataPoint[] = [];
   const humidity: ChartDataPoint[] = [];
   const soilMoisture: ChartDataPoint[] = [];

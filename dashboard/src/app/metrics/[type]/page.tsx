@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { MetricDetailChart } from "@/components/MetricDetailChart";
+import { AppNav } from "@/components/AppNav";
 import {
   METRIC_KEYS,
   METRIC_TITLE,
@@ -70,7 +71,7 @@ export default function MetricDetailPage() {
   if (loading || !user || !metricKey) {
     return (
       <main className="main">
-        <h1>Garden Monitoring</h1>
+        <h1>Smart Eco-Monitoring Platform</h1>
         <p className="muted">Loading…</p>
       </main>
     );
@@ -79,8 +80,15 @@ export default function MetricDetailPage() {
   const title = METRIC_TITLE[metricKey];
   const unit = METRIC_UNIT[metricKey];
 
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+    router.refresh();
+  }
+
   return (
     <main className="main">
+      <AppNav user={user} onSignOut={handleSignOut} />
       <Link href="/" className="metric-back-link">
         ← Back to overview
       </Link>

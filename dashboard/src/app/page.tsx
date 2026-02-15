@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { EmptyChartCard } from "@/components/EmptyChart";
+import { OverviewAnalysis } from "@/components/OverviewAnalysis";
+import { CriticalAlerts } from "@/components/CriticalAlerts";
+import { AppNav } from "@/components/AppNav";
 import { useSensorReadings } from "@/lib/useSensorReadings";
 
 export default function DashboardPage() {
@@ -45,7 +48,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <main className="main">
-        <h1>Garden Monitoring</h1>
+        <h1>Smart Eco-Monitoring Platform</h1>
         <p className="muted">Loading…</p>
       </main>
     );
@@ -54,7 +57,7 @@ export default function DashboardPage() {
   if (!user) {
     return (
       <main className="main">
-        <h1>Garden Monitoring</h1>
+        <h1>Smart Eco-Monitoring Platform</h1>
         <p className="muted">Redirecting to sign in…</p>
       </main>
     );
@@ -62,26 +65,18 @@ export default function DashboardPage() {
 
   return (
     <main className="main">
-      <header className="dashboard-header">
-        <div>
-          <h1>Garden Environment Monitoring</h1>
-          <p className="subtitle">
-            LoRaWAN sensors → Gateway → TTN → Supabase → this dashboard
-          </p>
-        </div>
-        <div className="dashboard-actions">
-          <span className="muted">{user.email}</span>
-          <button type="button" onClick={handleSignOut} className="auth-button auth-button-outline">
-            Sign out
-          </button>
-        </div>
-      </header>
+      <AppNav user={user} onSignOut={handleSignOut} />
 
       {dataError && (
         <p className="muted" style={{ color: "#f85149", marginBottom: "1rem" }}>
           Could not load sensor data: {dataError}
         </p>
       )}
+
+      <CriticalAlerts />
+
+      <OverviewAnalysis />
+
       <section className="charts-grid">
         <EmptyChartCard title="Temperature" unit="°C" data={chartData?.Temperature} href="/metrics/temperature" />
         <EmptyChartCard title="Humidity" unit="%" data={chartData?.Humidity} href="/metrics/humidity" />
