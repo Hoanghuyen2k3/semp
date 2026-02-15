@@ -52,7 +52,7 @@ export function loadEmailSettings(): EmailNotificationSettings {
     const parsed = JSON.parse(raw) as EmailNotificationSettings & { resendApiKey?: string };
     return { enabled: parsed.enabled, recipientEmail: parsed.recipientEmail ?? "" };
   } catch {
-    return { enabled: false, recipientEmail: "", resendApiKey: "" };
+    return { enabled: false, recipientEmail: "" };
   }
 }
 
