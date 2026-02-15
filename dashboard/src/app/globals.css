@@ -195,6 +195,51 @@ a:hover {
   color: var(--accent);
 }
 
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-button-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  margin-top: 0;
+}
+
+.auth-button-google:hover:not(:disabled) {
+  filter: brightness(0.97);
+  border-color: var(--muted) !important;
+}
+
+.auth-google-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4285f4;
+  font-family: "Roboto", system-ui, sans-serif;
+}
+
 .auth-switch {
   text-align: center;
   margin: 1.25rem 0 0;

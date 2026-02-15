@@ -13,6 +13,24 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  async function handleGoogleSignIn() {
+    setGoogleLoading(true);
+    setMessage(null);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined,
+      },
+    });
+    if (error) {
+      setMessage({ type: "error", text: error.message });
+      setGoogleLoading(false);
+      return;
+    }
+    // Browser redirects to Google - don't set loading false
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -87,6 +105,20 @@ export default function LoginPage() {
           )}
           <button type="submit" disabled={loading} className="auth-button">
             {loading ? "Please wait…" : isRegister ? "Create account" : "Sign in"}
+          </button>
+
+          <div className="auth-divider">or</div>
+
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={loading || googleLoading}
+            className="auth-button auth-button-google"
+          >
+            <span className="auth-google-icon" aria-hidden>
+              G
+            </span>
+            {googleLoading ? "Redirecting…" : "Continue with Google"}
           </button>
         </form>
 
