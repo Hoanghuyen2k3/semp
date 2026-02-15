@@ -15,6 +15,7 @@ export function AppNav({ user, onSignOut }: AppNavProps) {
   const pathname = usePathname();
   const notificationCtx = useAlertNotificationContext();
   const isDashboard = pathname === "/" || pathname?.startsWith("/metrics");
+  const isLive = pathname === "/live";
   const isSettings = pathname === "/settings";
 
   return (
@@ -27,6 +28,12 @@ export function AppNav({ user, onSignOut }: AppNavProps) {
             className={`app-nav-tab ${isDashboard ? "active" : ""}`}
           >
             Dashboard
+          </Link>
+          <Link
+            href="/live"
+            className={`app-nav-tab ${isLive ? "active" : ""}`}
+          >
+            Live
           </Link>
           <Link
             href="/settings"
