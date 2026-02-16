@@ -274,10 +274,6 @@ export default function SettingsPage() {
             />
           </label>
         </div>
-        <p className="muted" style={{ marginTop: "0.75rem", fontSize: "0.8rem" }}>
-          The Resend API key is stored securely on the server. Set it once via:{" "}
-          <code>supabase secrets set RESEND_API_KEY=re_xxx</code>
-        </p>
         <div className="settings-actions" style={{ marginTop: "1.25rem" }}>
           <button
             type="button"
