@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { InferenceClient } from "@huggingface/inference";
 
 export const dynamic = "force-dynamic";
 
-const GEMINI_MODEL = "gemini-2.0-flash";
+/** Default: Llama 2 7B Chat. Override with HF_CHAT_MODEL. Gated — accept the license on the model page at huggingface.co. */
+const DEFAULT_HF_CHAT_MODEL = "meta-llama/Llama-2-7b-chat-hf";
 
 type ChatMessage = { role: "user" | "model"; text: string };
 
@@ -12,14 +14,31 @@ Metrics: air temperature & humidity, soil moisture, soil pH, water flow, water d
 Help users interpret readings, irrigation, alerts, and how the system is wired. Be concise and practical.
 If a "Current sensor & weather context" block is provided, use it to tailor answers. If something is unknown, say so.`;
 
+function assistantContent(content: unknown): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === "object" && part !== null && "text" in part) {
+          return String((part as { text: unknown }).text);
+        }
+        return "";
+      })
+      .join("");
+  }
+  return "";
+}
+
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
+  const token = process.env.HUGGINGFACE_TOKEN;
+  if (!token) {
     return NextResponse.json(
-      { error: "Chat not configured. Add GEMINI_API_KEY to .env.local" },
+      { error: "Chat not configured. Add HUGGINGFACE_TOKEN to .env.local (same token as Plant Health)." },
       { status: 503 }
     );
   }
+
+  const model = (process.env.HF_CHAT_MODEL ?? DEFAULT_HF_CHAT_MODEL).trim() || DEFAULT_HF_CHAT_MODEL;
 
   try {
     const body = await req.json();
@@ -30,60 +49,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Provide messages with at least one user turn" }, { status: 400 });
     }
 
-    const parts: { role: string; parts: { text: string }[] }[] = [];
-    for (const m of messages) {
-      if (m.role !== "user" && m.role !== "model") continue;
-      parts.push({
-        role: m.role,
-        parts: [{ text: m.text }],
-      });
-    }
-
     const systemText = context.trim()
       ? `${SYSTEM}\n\n[Current sensor & weather context]\n${context.trim()}`
       : SYSTEM;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const hfMessages: { role: "system" | "user" | "assistant"; content: string }[] = [
+      { role: "system", content: systemText },
+    ];
 
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemText }] },
-        contents: parts,
-        generationConfig: { maxOutputTokens: 1024, temperature: 0.6 },
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Gemini error", res.status, errText);
-      return NextResponse.json(
-        { error: `Gemini API error (${res.status}). Check model access and API key.` },
-        { status: 502 }
-      );
+    for (const m of messages) {
+      if (m.role === "user") {
+        hfMessages.push({ role: "user", content: m.text });
+      } else if (m.role === "model") {
+        hfMessages.push({ role: "assistant", content: m.text });
+      }
     }
 
-    const data = (await res.json()) as {
-      candidates?: { content?: { parts?: { text?: string }[] } }[];
-      error?: { message?: string };
-    };
+    const client = new InferenceClient(token);
+    const completion = await client.chatCompletion({
+      model,
+      messages: hfMessages,
+      max_tokens: 1024,
+      temperature: 0.6,
+    });
 
-    const text =
-      data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ??
-      data.error?.message ??
-      "";
+    const text = assistantContent(completion.choices?.[0]?.message?.content).trim();
 
     if (!text) {
       return NextResponse.json({ error: "Empty response from model" }, { status: 502 });
     }
 
-    return NextResponse.json({ text: text.trim() });
+    return NextResponse.json({ text });
   } catch (e) {
-    console.error("Chat route:", e);
+    console.error("Chat route (Hugging Face):", e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Chat failed" },
-      { status: 500 }
+      { status: 502 }
     );
   }
 }
