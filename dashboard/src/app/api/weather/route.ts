@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { WeatherDaySummary, WeatherPayload, WeatherSlot } from "@/lib/gardenPredictions";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type OwListItem = {
   dt: number;
@@ -16,15 +17,102 @@ type OwForecastResponse = {
   list: OwListItem[];
 };
 
-function groupForecast(list: OwListItem[]): { days: WeatherDaySummary[]; slots24h: WeatherSlot[] } {
+function pickW(item: OwListItem) {
+  return item.weather[0];
+}
+
+function formatSlotLabel(tsSec: number): string {
+  return new Date(tsSec * 1000).toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** Six samples over 24h at 4h steps; linear interp between OpenWeather’s 3h points. */
+function buildFourHourSlots(list: OwListItem[], nowSec: number): WeatherSlot[] {
+  const sorted = [...list].filter((x) => x.dt > nowSec).sort((a, b) => a.dt - b.dt);
+  if (sorted.length === 0) return [];
+
+  const FOUR_H = 4 * 3600;
+  const slots: WeatherSlot[] = [];
+
+  const interpolateOne = (target: number): WeatherSlot => {
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+
+    if (target <= first.dt) {
+      const w = pickW(first);
+      return {
+        label: formatSlotLabel(target),
+        temp: first.main.temp,
+        icon: w?.icon ?? "01d",
+        pop: first.pop ?? 0,
+        description: w?.description ?? "",
+      };
+    }
+    if (target >= last.dt) {
+      const w = pickW(last);
+      return {
+        label: formatSlotLabel(target),
+        temp: last.main.temp,
+        icon: w?.icon ?? "01d",
+        pop: last.pop ?? 0,
+        description: w?.description ?? "",
+      };
+    }
+
+    for (let j = 0; j < sorted.length - 1; j++) {
+      const a = sorted[j];
+      const b = sorted[j + 1];
+      if (a.dt <= target && target <= b.dt) {
+        const span = b.dt - a.dt;
+        const frac = span > 0 ? (target - a.dt) / span : 0;
+        const temp = a.main.temp + frac * (b.main.temp - a.main.temp);
+        const pop = (a.pop ?? 0) + frac * ((b.pop ?? 0) - (a.pop ?? 0));
+        const pick = frac < 0.5 ? a : b;
+        const w = pickW(pick);
+        return {
+          label: formatSlotLabel(target),
+          temp,
+          icon: w?.icon ?? "01d",
+          pop: Math.min(1, Math.max(0, pop)),
+          description: w?.description ?? "",
+        };
+      }
+    }
+
+    let nearest = sorted[0];
+    let best = Math.abs(nearest.dt - target);
+    for (const item of sorted) {
+      const d = Math.abs(item.dt - target);
+      if (d < best) {
+        best = d;
+        nearest = item;
+      }
+    }
+    const w = pickW(nearest);
+    return {
+      label: formatSlotLabel(target),
+      temp: nearest.main.temp,
+      icon: w?.icon ?? "01d",
+      pop: nearest.pop ?? 0,
+      description: w?.description ?? "",
+    };
+  };
+
+  for (let i = 0; i < 6; i++) {
+    slots.push(interpolateOne(nowSec + i * FOUR_H));
+  }
+
+  return slots;
+}
+
+function groupDays(list: OwListItem[]): WeatherDaySummary[] {
   const now = Date.now() / 1000;
   const dayMap = new Map<
     string,
     { temps: number[]; pops: number[]; icons: string[]; descs: string[]; firstDt: number }
   >();
-
-  const slots24h: WeatherSlot[] = [];
-  const horizon = now + 24 * 60 * 60;
 
   for (const item of list) {
     if (item.dt <= now) continue;
@@ -40,20 +128,9 @@ function groupForecast(list: OwListItem[]): { days: WeatherDaySummary[]; slots24
       g.icons.push(w.icon);
       g.descs.push(w.description);
     }
-
-    if (item.dt <= horizon && slots24h.length < 8) {
-      const w = item.weather[0];
-      slots24h.push({
-        time: item.dt_txt.slice(11, 16),
-        temp: item.main.temp,
-        icon: w?.icon ?? "01d",
-        pop: item.pop ?? 0,
-        description: w?.description ?? "",
-      });
-    }
   }
 
-  const days: WeatherDaySummary[] = Array.from(dayMap.entries())
+  return Array.from(dayMap.entries())
     .sort((a, b) => a[1].firstDt - b[1].firstDt)
     .slice(0, 5)
     .map(([dateKey, g]) => {
@@ -72,16 +149,14 @@ function groupForecast(list: OwListItem[]): { days: WeatherDaySummary[]; slots24
         popMax: Math.max(...g.pops, 0),
       };
     });
-
-  return { days, slots24h };
 }
 
 export async function GET() {
-  const key = process.env.OPENWEATHER_API_KEY;
-  const lat = process.env.OPENWEATHER_LAT ?? "43.6532";
-  const lon = process.env.OPENWEATHER_LON ?? "-79.3832";
+  const key = process.env["OPENWEATHER_API_KEY"];
+  const lat = process.env["OPENWEATHER_LAT"] ?? "43.6532";
+  const lon = process.env["OPENWEATHER_LON"] ?? "-79.3832";
 
-  if (!key) {
+  if (!key?.trim()) {
     return NextResponse.json(
       { error: "Weather not configured. Set OPENWEATHER_API_KEY and coordinates in .env.local" },
       { status: 503 }
@@ -91,7 +166,7 @@ export async function GET() {
   const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&appid=${encodeURIComponent(key)}&units=metric`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 600 } });
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
       const t = await res.text();
       return NextResponse.json(
@@ -102,9 +177,11 @@ export async function GET() {
 
     const data = (await res.json()) as OwForecastResponse;
     const list = data.list ?? [];
-    const { days, slots24h } = groupForecast(list);
-
     const now = Date.now() / 1000;
+
+    const days = groupDays(list);
+    const slots24h = buildFourHourSlots(list, now);
+
     const next24 = list.filter((x) => x.dt > now && x.dt <= now + 24 * 3600);
     const pops = next24.map((x) => x.pop ?? 0);
     const rainRisk24h = pops.length ? Math.max(...pops) : 0;

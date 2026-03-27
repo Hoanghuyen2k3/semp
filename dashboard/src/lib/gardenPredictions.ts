@@ -1,7 +1,9 @@
 import type { ChartDataset } from "./useSensorReadings";
 
+/** One point in the “next 24h” strip (4-hour steps, interpolated from 3h API data). */
 export type WeatherSlot = {
-  time: string;
+  /** Local time label for this step (e.g. 3:00 PM) */
+  label: string;
   temp: number;
   icon: string;
   pop: number;
@@ -22,6 +24,7 @@ export type WeatherPayload = {
   city: string;
   country: string;
   days: WeatherDaySummary[];
+  /** Six slots: now and every 4h through 20h ahead */
   slots24h: WeatherSlot[];
   /** max pop in next ~24h (0–1) */
   rainRisk24h: number;
