@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Next.js
+dashboard/.next/
+dashboard/out/
+
+# Env (keep secrets out of git)
+.env
+.env.local
+.env.*.local
+
+# IDE / OS
+.idea/
+.vscode/
+*.log
+.DS_Store
+Thumbs.db
+
+# Supabase
+.supabase/
