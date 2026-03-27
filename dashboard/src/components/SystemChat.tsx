@@ -70,7 +70,7 @@ export function SystemChat({ chartData, weather }: Props) {
         <div className="chat-panel" role="dialog" aria-label="SEMP assistant">
           <div className="chat-panel-header">
             <span>SEMP assistant</span>
-            <span className="muted chat-panel-sub">Llama&nbsp;2 (HF)</span>
+            <span className="muted chat-panel-sub">Llama&nbsp;3 (HF)</span>
           </div>
           <div className="chat-messages">
             {messages.length === 0 && (

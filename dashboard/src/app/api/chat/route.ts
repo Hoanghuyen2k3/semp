@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { InferenceClient } from "@huggingface/inference";
+import {
+  InferenceClient,
+  InferenceClientProviderApiError,
+  type InferenceProviderOrPolicy,
+} from "@huggingface/inference";
 
 export const dynamic = "force-dynamic";
 
-/** Default: Llama 2 7B Chat. Override with HF_CHAT_MODEL. Gated — accept the license on the model page at huggingface.co. */
-const DEFAULT_HF_CHAT_MODEL = "meta-llama/Llama-2-7b-chat-hf";
+/**
+ * Default: Meta Llama 3 8B Instruct — has active Inference Providers on the Hub.
+ * `meta-llama/Llama-2-7b-chat-hf` is not deployed on HF serverless inference (router returns 400).
+ * Override with HF_CHAT_MODEL if you use a model that your account can route (or your own endpoint).
+ */
+const DEFAULT_HF_CHAT_MODEL = "meta-llama/Meta-Llama-3-8B-Instruct";
 
 type ChatMessage = { role: "user" | "model"; text: string };
 
@@ -29,6 +37,17 @@ function assistantContent(content: unknown): string {
   return "";
 }
 
+function providerErrorDetail(e: unknown): string {
+  if (e instanceof InferenceClientProviderApiError) {
+    const body = e.httpResponse?.body;
+    if (body && typeof body === "object" && body !== null && "error" in body) {
+      const errObj = (body as { error: unknown }).error;
+      return typeof errObj === "string" ? errObj : JSON.stringify(errObj);
+    }
+  }
+  return "";
+}
+
 export async function POST(req: NextRequest) {
   const token = process.env.HUGGINGFACE_TOKEN;
   if (!token) {
@@ -39,6 +58,8 @@ export async function POST(req: NextRequest) {
   }
 
   const model = (process.env.HF_CHAT_MODEL ?? DEFAULT_HF_CHAT_MODEL).trim() || DEFAULT_HF_CHAT_MODEL;
+  const providerEnv = process.env.HF_CHAT_PROVIDER?.trim();
+  const provider = providerEnv ? (providerEnv as InferenceProviderOrPolicy) : undefined;
 
   try {
     const body = await req.json();
@@ -53,13 +74,14 @@ export async function POST(req: NextRequest) {
       ? `${SYSTEM}\n\n[Current sensor & weather context]\n${context.trim()}`
       : SYSTEM;
 
-    const hfMessages: { role: "system" | "user" | "assistant"; content: string }[] = [
-      { role: "system", content: systemText },
-    ];
-
+    /** No `system` role — some chat templates (e.g. Gemma) reject it; this matches “instructions in first user turn”. */
+    const hfMessages: { role: "user" | "assistant"; content: string }[] = [];
+    let prependedSystem = false;
     for (const m of messages) {
       if (m.role === "user") {
-        hfMessages.push({ role: "user", content: m.text });
+        const content = !prependedSystem ? `${systemText}\n\n${m.text}` : m.text;
+        prependedSystem = true;
+        hfMessages.push({ role: "user", content });
       } else if (m.role === "model") {
         hfMessages.push({ role: "assistant", content: m.text });
       }
@@ -68,6 +90,7 @@ export async function POST(req: NextRequest) {
     const client = new InferenceClient(token);
     const completion = await client.chatCompletion({
       model,
+      ...(provider ? { provider } : {}),
       messages: hfMessages,
       max_tokens: 1024,
       temperature: 0.6,
@@ -82,9 +105,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ text });
   } catch (e) {
     console.error("Chat route (Hugging Face):", e);
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Chat failed" },
-      { status: 502 }
-    );
+    const base = e instanceof Error ? e.message : "Chat failed";
+    const detail = providerErrorDetail(e);
+    const error = detail ? `${base} — ${detail}` : base;
+    return NextResponse.json({ error }, { status: 502 });
   }
 }
