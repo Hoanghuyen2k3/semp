@@ -8,13 +8,22 @@ import { EmptyChartCard } from "@/components/EmptyChart";
 import { OverviewAnalysis } from "@/components/OverviewAnalysis";
 import { CriticalAlerts } from "@/components/CriticalAlerts";
 import { AppNav } from "@/components/AppNav";
+import { WeatherForecast } from "@/components/WeatherForecast";
+import { GardenPredictions } from "@/components/GardenPredictions";
+import { SystemChat } from "@/components/SystemChat";
 import { useSensorReadings } from "@/lib/useSensorReadings";
+import { useWeatherForecast } from "@/lib/useWeatherForecast";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { data: chartData, loading: dataLoading, error: dataError } = useSensorReadings();
+  const {
+    data: weather,
+    loading: weatherLoading,
+    error: weatherError,
+  } = useWeatherForecast();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -74,6 +83,13 @@ export default function DashboardPage() {
       )}
 
       <CriticalAlerts />
+
+      <div className="dashboard-insights-grid">
+        <WeatherForecast weather={weather} loading={weatherLoading} error={weatherError} />
+        <GardenPredictions chartData={chartData} weather={weather} dataLoading={dataLoading} />
+      </div>
+
+      <SystemChat chartData={chartData} weather={weather} />
 
       <OverviewAnalysis />
 
