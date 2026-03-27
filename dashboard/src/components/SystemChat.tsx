@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { buildChatContextSummary } from "@/lib/gardenPredictions";
 import type { WeatherPayload } from "@/lib/gardenPredictions";
 import type { ChartDataset } from "@/lib/useSensorReadings";
@@ -80,7 +82,9 @@ export function SystemChat({ chartData, weather }: Props) {
             )}
             {messages.map((m, i) => (
               <div key={i} className={`chat-bubble chat-bubble-${m.role}`}>
-                {m.text}
+                <div className="chat-md">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown>
+                </div>
               </div>
             ))}
             {pending && <div className="chat-bubble chat-bubble-model muted">…</div>}
