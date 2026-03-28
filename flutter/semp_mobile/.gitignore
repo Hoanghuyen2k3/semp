@@ -21,6 +21,9 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
+# Local secrets / machine-specific config (copy from lib/config/env.example.dart)
+lib/config/env.dart
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
