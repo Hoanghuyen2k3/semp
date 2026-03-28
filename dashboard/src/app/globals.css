@@ -68,7 +68,7 @@ a:hover {
 }
 
 .main {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem 1rem;
 }
@@ -1348,17 +1348,33 @@ a:hover {
   color: var(--muted);
 }
 
-/* Weather & predictions */
-.dashboard-insights-grid {
+/* Dashboard top: left = critical + predictions, right = weather */
+.dashboard-two-col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
   align-items: start;
 }
 
+.dashboard-col-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.dashboard-col-stack .critical-section,
+.dashboard-col-stack .overview-section {
+  margin-bottom: 0;
+}
+
+.dashboard-col-weather {
+  min-width: 0;
+}
+
 @media (max-width: 900px) {
-  .dashboard-insights-grid {
+  .dashboard-two-col {
     grid-template-columns: 1fr;
   }
 }

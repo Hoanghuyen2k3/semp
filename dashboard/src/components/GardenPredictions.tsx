@@ -19,8 +19,8 @@ const SEVERITY_CLASS: Record<string, string> = {
 export function GardenPredictions({ chartData, weather, dataLoading }: Props) {
   if (dataLoading) {
     return (
-      <section className="overview-section">
-        <h2>Weather &amp; sensor predictions</h2>
+      <section className="overview-section predictions-section">
+        <h2>Sensor predictions</h2>
         <p className="muted">Waiting for sensor data…</p>
       </section>
     );
@@ -31,11 +31,11 @@ export function GardenPredictions({ chartData, weather, dataLoading }: Props) {
   return (
     <section className="overview-section predictions-section">
       <div className="overview-header">
-        <h2>Weather &amp; sensor predictions</h2>
+        <h2>Sensor predictions</h2>
         <span className="muted overview-badge">Rule-based</span>
       </div>
       <p className="muted overview-desc">
-        Combines forecast (rain, temperature) with latest soil moisture, humidity, and water depth when available.
+        Uses the weather panel and latest soil moisture, humidity, and water depth when available.
       </p>
       <ul className="prediction-list">
         {items.map((p) => (

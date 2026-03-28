@@ -82,11 +82,14 @@ export default function DashboardPage() {
         </p>
       )}
 
-      <CriticalAlerts />
-
-      <div className="dashboard-insights-grid">
-        <WeatherForecast weather={weather} loading={weatherLoading} error={weatherError} />
-        <GardenPredictions chartData={chartData} weather={weather} dataLoading={dataLoading} />
+      <div className="dashboard-two-col" aria-label="Alerts, predictions, and weather">
+        <div className="dashboard-col-stack">
+          <CriticalAlerts />
+          <GardenPredictions chartData={chartData} weather={weather} dataLoading={dataLoading} />
+        </div>
+        <div className="dashboard-col-weather">
+          <WeatherForecast weather={weather} loading={weatherLoading} error={weatherError} />
+        </div>
       </div>
 
       <SystemChat chartData={chartData} weather={weather} />
