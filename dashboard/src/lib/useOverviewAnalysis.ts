@@ -101,7 +101,7 @@ export function useOverviewAnalysis() {
         }
 
         const typed = (rows ?? []) as SensorReading[];
-        const dataset = extractChartData(typed);
+        const dataset = extractChartData(typed, Number.MAX_SAFE_INTEGER);
         const limit = 24;
         const metrics: MetricOverview[] = METRIC_CONFIG.map(({ key, unit }) => {
           const arr = dataset[key] ?? [];

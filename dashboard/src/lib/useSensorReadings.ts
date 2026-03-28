@@ -25,7 +25,7 @@ function toNumber(val: unknown): number {
   return 0;
 }
 
-export function extractChartData(readings: SensorReading[]): ChartDataset {
+export function extractChartData(readings: SensorReading[], perSeriesLimit = 15): ChartDataset {
   const temp: ChartDataPoint[] = [];
   const humidity: ChartDataPoint[] = [];
   const soilMoisture: ChartDataPoint[] = [];
@@ -67,14 +67,15 @@ export function extractChartData(readings: SensorReading[]): ChartDataset {
     }
   }
 
-  const limit = 15;
+  const cap = (arr: ChartDataPoint[]) =>
+    perSeriesLimit >= 999_999_999 ? arr : arr.slice(-perSeriesLimit);
   return {
-    Temperature: temp.slice(-limit),
-    Humidity: humidity.slice(-limit),
-    "Soil moisture": soilMoisture.slice(-limit),
-    "Soil pH": soilPh.slice(-limit),
-    "Water flow": waterFlow.slice(-limit),
-    "Water depth": waterDepth.slice(-limit),
+    Temperature: cap(temp),
+    Humidity: cap(humidity),
+    "Soil moisture": cap(soilMoisture),
+    "Soil pH": cap(soilPh),
+    "Water flow": cap(waterFlow),
+    "Water depth": cap(waterDepth),
   };
 }
 
@@ -169,7 +170,7 @@ export function useSensorReadingsForMetric(metricKey: MetricKey, range: TimeRang
         }
 
         const typed = (rows ?? []) as SensorReading[];
-        const dataset = extractChartData(typed);
+        const dataset = extractChartData(typed, Number.MAX_SAFE_INTEGER);
         const chartKey = METRIC_CHART_KEY[metricKey];
         setData(dataset[chartKey]);
       } catch (e) {
@@ -198,7 +199,7 @@ export function useSensorReadings() {
           .from("sensor_readings")
           .select("id, device_id, payload, received_at")
           .order("received_at", { ascending: false })
-          .limit(100);
+          .limit(800);
 
         if (err) {
           setError(err.message);
@@ -207,7 +208,8 @@ export function useSensorReadings() {
         }
 
         const typed = (rows ?? []) as SensorReading[];
-        setData(extractChartData(typed));
+        const chronological = [...typed].reverse();
+        setData(extractChartData(chronological, 96));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to fetch");
         setData(null);

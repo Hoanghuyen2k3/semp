@@ -72,7 +72,8 @@ function checkMetricAlerts(
 }
 
 function computeAlerts(readings: SensorReading[]): CriticalAlert[] {
-  const dataset = extractChartData(readings);
+  const chronological = [...readings].reverse();
+  const dataset = extractChartData(chronological, Number.MAX_SAFE_INTEGER);
   const config = loadThresholdConfig();
   const all: CriticalAlert[] = [];
   for (const { key, unit } of METRIC_CONFIGS) {

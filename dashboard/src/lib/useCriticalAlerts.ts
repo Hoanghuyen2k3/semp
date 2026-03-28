@@ -105,7 +105,8 @@ export function useCriticalAlerts() {
         }
 
         const typed = (rows ?? []) as SensorReading[];
-        const dataset = extractChartData(typed);
+        const chronological = [...typed].reverse();
+        const dataset = extractChartData(chronological, Number.MAX_SAFE_INTEGER);
         const currentConfig = loadThresholdConfig();
 
         const all: CriticalAlert[] = [];

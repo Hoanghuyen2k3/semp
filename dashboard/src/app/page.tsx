@@ -10,6 +10,7 @@ import { CriticalAlerts } from "@/components/CriticalAlerts";
 import { AppNav } from "@/components/AppNav";
 import { WeatherForecast } from "@/components/WeatherForecast";
 import { GardenPredictions } from "@/components/GardenPredictions";
+import { AdvancedAnalysisCharts } from "@/components/AdvancedAnalysisCharts";
 import { SystemChat } from "@/components/SystemChat";
 import { useSensorReadings } from "@/lib/useSensorReadings";
 import { useWeatherForecast } from "@/lib/useWeatherForecast";
@@ -95,6 +96,8 @@ export default function DashboardPage() {
       <SystemChat chartData={chartData} weather={weather} />
 
       <OverviewAnalysis />
+
+      <AdvancedAnalysisCharts chartData={chartData} loading={dataLoading} />
 
       <section className="charts-grid">
         <EmptyChartCard title="Temperature" unit="°C" data={chartData?.Temperature} href="/metrics/temperature" />

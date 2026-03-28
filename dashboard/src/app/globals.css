@@ -367,6 +367,132 @@ a:hover {
   gap: 0.75rem;
 }
 
+/* Advanced analysis (multi-series charts) */
+.analytics-section {
+  margin-bottom: 2.5rem;
+}
+
+.analytics-section-head {
+  margin-bottom: 1.25rem;
+}
+
+.analytics-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.analytics-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  max-width: 42rem;
+}
+
+.analytics-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.analytics-kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.analytics-kpi-card:hover {
+  border-color: var(--accent);
+  background: var(--overlay-accent-hover);
+}
+
+.analytics-kpi-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.analytics-kpi-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.analytics-kpi-meta {
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.analytics-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.analytics-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem 1.15rem;
+  box-shadow: 0 2px 12px var(--shadow);
+  min-width: 0;
+}
+
+.analytics-card--wide {
+  grid-column: 1 / -1;
+}
+
+.analytics-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.analytics-card-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.analytics-card-link {
+  font-size: 0.8rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.analytics-card-link:hover {
+  text-decoration: underline;
+}
+
+.analytics-card-hint {
+  font-size: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .analytics-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-card--wide {
+    grid-column: auto;
+  }
+}
+
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
