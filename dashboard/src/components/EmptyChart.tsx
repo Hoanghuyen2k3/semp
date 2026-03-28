@@ -68,7 +68,10 @@ function CustomTooltip({
     >
       <div style={{ color: "var(--muted)" }}>{dt}</div>
       <div>
-        {title}: <strong>{p.value}{unit ?? ""}</strong>
+        {title}: <strong>
+          {typeof p.value === "number" ? p.value.toFixed(1) : p.value}
+          {unit ?? ""}
+        </strong>
       </div>
     </div>
   );
@@ -111,6 +114,7 @@ export function EmptyChartCard({ title, unit, data, href }: EmptyChartCardProps)
             tickLine={{ stroke: "var(--border)" }}
             axisLine={{ stroke: "var(--border)" }}
             unit={unit}
+            tickFormatter={(v) => (typeof v === "number" && !Number.isNaN(v) ? v.toFixed(1) : String(v))}
           />
           <Tooltip
             content={(props) => <CustomTooltip {...props} title={title} unit={unit} />}
