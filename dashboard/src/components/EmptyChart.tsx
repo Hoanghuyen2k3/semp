@@ -41,14 +41,12 @@ function formatDateTime(iso: string) {
 function CustomTooltip({
   active,
   payload,
-  title,
-  unit,
+  headingTitle,
 }: {
   active?: boolean;
   payload?: unknown[];
   label?: string;
-  title: string;
-  unit?: string;
+  headingTitle: string;
 }) {
   if (!active || !payload?.length) return null;
   const first = payload[0] as Record<string, unknown>;
@@ -68,10 +66,8 @@ function CustomTooltip({
     >
       <div style={{ color: "var(--muted)" }}>{dt}</div>
       <div>
-        {title}: <strong>
-          {typeof p.value === "number" ? p.value.toFixed(1) : p.value}
-          {unit ?? ""}
-        </strong>
+        {headingTitle}:{" "}
+        <strong>{typeof p.value === "number" ? p.value.toFixed(1) : p.value}</strong>
       </div>
     </div>
   );
@@ -87,6 +83,7 @@ function getDomain(data: ChartDataPoint[]): [number, number] {
 }
 
 export function EmptyChartCard({ title, unit, data, href }: EmptyChartCardProps) {
+  const headingTitle = unit ? `${title} (${unit})` : title;
   const id = gradientId(title);
   const chartData = data && data.length > 0 ? data : EMPTY_DATA;
   const hasData = data && data.length > 0;
@@ -94,7 +91,7 @@ export function EmptyChartCard({ title, unit, data, href }: EmptyChartCardProps)
 
   return (
     <div className="chart-card">
-      <h3>{title}</h3>
+      <h3>{headingTitle}</h3>
       <ResponsiveContainer width="100%" height={160}>
         <AreaChart
           data={chartData}
@@ -113,11 +110,10 @@ export function EmptyChartCard({ title, unit, data, href }: EmptyChartCardProps)
             tick={{ fill: "var(--muted)", fontSize: 11 }}
             tickLine={{ stroke: "var(--border)" }}
             axisLine={{ stroke: "var(--border)" }}
-            unit={unit}
             tickFormatter={(v) => (typeof v === "number" && !Number.isNaN(v) ? v.toFixed(1) : String(v))}
           />
           <Tooltip
-            content={(props) => <CustomTooltip {...props} title={title} unit={unit} />}
+            content={(props) => <CustomTooltip {...props} headingTitle={headingTitle} />}
             wrapperStyle={{ outline: "none" }}
           />
           <Area
