@@ -1,6 +1,7 @@
 "use client";
 
 import type { WeatherPayload } from "@/lib/gardenPredictions";
+import { WEATHER_DISPLAY_LOCATION } from "@/lib/weatherLocation";
 
 type Props = {
   weather: WeatherPayload | null;
@@ -50,9 +51,8 @@ export function WeatherForecast({ weather, loading, error }: Props) {
           <h2 id="weather-heading" className="weather-panel-title">
             Weather
           </h2>
-          <p className="weather-panel-location">
-            {weather.city}
-            {weather.country ? ` · ${weather.country}` : ""}
+            <p className="weather-panel-location">
+            {WEATHER_DISPLAY_LOCATION}
           </p>
         </div>
         <div className="weather-panel-summary" role="group" aria-label="24h summary">

@@ -1,4 +1,5 @@
 import type { ChartDataset } from "./useSensorReadings";
+import { WEATHER_DISPLAY_LOCATION } from "./weatherLocation";
 
 /** One point in the “next 24h” strip (4-hour steps, interpolated from 3h API data). */
 export type WeatherSlot = {
@@ -134,7 +135,7 @@ export function computeGardenPredictions(
       title: "No strong alerts from current rules",
       detail:
         weather != null
-          ? `Watching ${weather.city}: forecast and sensors look routine. Add more history for richer trends.`
+          ? `Watching ${WEATHER_DISPLAY_LOCATION}: forecast and sensors look routine. Add more history for richer trends.`
           : "Connect weather (API key + coordinates) and keep sensors online for irrigation hints.",
     });
   }
@@ -160,7 +161,7 @@ export function buildChatContextSummary(
 
   if (weather) {
     lines.push(
-      `Weather (${weather.city}): rain likely 24h=${weather.rainLikely24h}, avg temp ~${weather.avgTemp24h.toFixed(0)}°C`
+      `Weather (${WEATHER_DISPLAY_LOCATION}): rain likely 24h=${weather.rainLikely24h}, avg temp ~${weather.avgTemp24h.toFixed(0)}°C`
     );
   }
 
