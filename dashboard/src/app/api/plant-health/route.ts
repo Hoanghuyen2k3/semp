@@ -36,7 +36,15 @@ export async function POST(req: NextRequest) {
     } else {
       const formData = await req.formData();
       const file = formData.get("image") as File | null;
-      if (!file || !file.type.startsWith("image/")) {
+      const isImageMime = !!file && file.type.startsWith("image/");
+      const isUntypedBinary =
+        !!file &&
+        (file.type === "" || file.type === "application/octet-stream");
+      const nameSuggestsImage =
+        !!file &&
+        /\.(jpe?g|png|gif|webp|heic|heif)$/i.test(file.name || "image.jpg");
+      const okImage = isImageMime || (isUntypedBinary && nameSuggestsImage);
+      if (!file || file.size === 0 || !okImage) {
         return NextResponse.json(
           { error: "Please upload an image file or provide imageUrl (JPEG, PNG)" },
           { status: 400 }
